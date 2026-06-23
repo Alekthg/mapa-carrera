@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ruta Oficial - Carrera Atlética Puebla 2026</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: #e8eef2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1a2a3a;
+            color: white;
+            padding: 18px 28px;
+            border-bottom: 3px solid #722F37;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 300;
+            color: #bdc3c7;
+        }
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.75;
+            margin-top: 6px;
+        }
+        .info-bar {
+            background: #f7f9fa;
+            padding: 10px 28px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #e0e4e8;
+            font-size: 0.85rem;
+        }
+        .info-bar div {
+            color: #2c3e50;
+        }
+        .info-bar strong {
+            color: #722F37;
+            font-weight: 600;
+        }
+        .map-container {
+            height: 550px;
+            width: 100%;
+            position: relative;
+            background: #e9ecef;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info-panel {
+            background: white;
+            padding: 18px 28px;
+            border-top: 1px solid #e9ecef;
+        }
+        .info-panel h3 {
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 14px;
+            border-left: 3px solid #722F37;
+            padding-left: 12px;
+        }
+        .route-table {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .route-item {
+            flex: 1;
+            min-width: 140px;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border-left: 2px solid #722F37;
+        }
+        .route-item .point {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #722F37;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .route-item .location {
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            color: #2c3e50;
+        }
+        .route-item .coord {
+            font-family: 'Courier New', monospace;
+            font-size: 0.55rem;
+            color: #7f8c8d;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        .footer {
+            background: #1a2a3a;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.7rem;
+        }
+        .distance-badge {
+            background: #722F37;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+        .route-note {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 12px;
+            border-top: 1px solid #e9ecef;
+            padding-top: 12px;
+        }
+        @media (max-width: 700px) {
+            .route-table {
+                flex-direction: column;
+            }
+            .header h1 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏃 Ruta Oficial - Carrera Atlética <span>Puebla 2026</span></h1>
+        <p>Recorridos de 3 km, 5 km y 10 km · 22 de junio de 2026 · 07:00 horas</p>
+    </div>
+    <div class="info-bar">
+        <div><strong>📅 Fecha:</strong> 22 de junio de 2026</div>
+        <div><strong>⏰ Hora:</strong> 07:00 horas</div>
+        <div><strong>📍 Salida / Llegada:</strong> Zona Norte</div>
+        <div><strong>📏 Distancias:</strong> 3 km · 5 km · 10 km</div>
+    </div>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    <div class="info-panel">
+        <h3>📋 Puntos de retorno por distancia</h3>
+        <div class="route-table">
+            <div class="route-item">
+                <div class="point">🏁 Inicio / Fin</div>
+                <div class="location">Zona de salida</div>
+                <div class="coord">19.045759, -98.208896</div>
+            </div>
+            <div class="route-item">
+                <div class="point">📍 3 km</div>
+                <div class="location">Retorno en 25 Sur</div>
+                <div class="coord">19.051333, -98.217584</div>
+            </div>
+            <div class="route-item">
+                <div class="point">📍 5 km</div>
+                <div class="location">Intersección Teziutlán Sur / Matamoros</div>
+                <div class="coord">19.053299, -98.227936</div>
+            </div>
+            <div class="route-item">
+                <div class="point">📍 10 km</div>
+                <div class="location">Centro Mayor</div>
+                <div class="coord">19.059918, -98.249708</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 16px;">
+            <span class="distance-badge">📏 Distancias: 3 km · 5 km · 10 km (ida y vuelta)</span>
+        </div>
+        <div class="route-note">
+            Todas las rutas salen y regresan al mismo punto · Av. Juárez · Teziutlán Sur · Vía Volkswagen
+        </div>
+    </div>
+    <div class="footer">
+        Dirección de Deportes y Eventos · Puebla, 2026
+    </div>
+</div>
+
+<script>
+    // Inicializar mapa
+    var map = L.map('map').setView([19.052, -98.222], 13.5);
+
+    // Capa de mapa
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    // ================= COORDENADAS EXACTAS =================
+    const inicio = [19.04575882203819, -98.20889603352904];
+    const retorno3km = [19.05133308771675, -98.21758394264883];
+    const retorno5km = [19.05329914979648, -98.22793568450413];
+    const centroMayor = [19.05991818034831, -98.24970753065566];
+
+    // Puntos intermedios (SIN PIN) - TODOS SOBRE TEZIUTLÁN SUR
+    const giroAvJuarez = [19.046681697858368, -98.20841323589693];
+    const pegado1 = [19.048153310935515, -98.21139215251469];
+    const pegado2 = [19.05223613725303, -98.2193148159838];
+    const fuenteFrailes = [19.05403326296829, -98.22251636872831];
+    const pegado3 = [19.054488688945135, -98.22382005478896];
+    const giroTeziutlan = [19.05459172448963, -98.22413052742172];
+    
+    // Puntos sobre Teziutlán Sur (ordenados geográficamente)
+    const teziutlan1 = [19.053310915837407, -98.2256779468127];
+    const teziutlan2 = [19.054421791252693, -98.22420032763173];
+    const teziutlan3 = [19.053495672744823, -98.22518012788726];
+    const teziutlan4 = [19.053072021068548, -98.2263996665273];
+    const teziutlan5 = [19.05300798060468, -98.22734819651122];
+    const teziutlan6 = [19.05339059650381, -98.22871270999497];
+    const teziutlan7 = [19.055176095881798, -98.23030002306892];
+    const teziutlan8 = [19.05331340413337, -98.22851561809381];
+    const teziutlan9 = [19.05415577902952, -98.22966219282416];
+    const teziutlan10 = [19.055618841052176, -98.23049606537136];
+    const teziutlan11 = [19.057136076900555, -98.23100160058259];
+    const teziutlan12 = [19.057850355226517, -98.23105371768092];
+    
+    const chignahuapan = [19.058071335204488, -98.23118720731603];
+    const viaVolkswagen1 = [19.059568221774132, -98.23434350241789];
+    const viaVolkswagen2 = [19.059742671351948, -98.23636823041836];
+    const viaVolkswagen3 = [19.059759725851315, -98.2379538187635];
+
+    // ================= RUTA 3 KM (ida y vuelta) =================
+    const ruta3kmIda = [
+        inicio,
+        [19.0460, -98.2087],
+        giroAvJuarez,
+        [19.0472, -98.2095],
+        [19.0478, -98.2105],
+        pegado1,
+        [19.0488, -98.2125],
+        [19.0495, -98.2138],
+        [19.0500, -98.2150],
+        [19.0507, -98.2162],
+        retorno3km
+    ];
+    const ruta3kmVuelta = [...ruta3kmIda].reverse();
+
+    // ================= RUTA 5 KM (ida y vuelta) - SOLO TEZIUTLÁN SUR =================
+    const ruta5kmIda = [
+        inicio,
+        [19.0460, -98.2087],
+        giroAvJuarez,
+        [19.0472, -98.2095],
+        [19.0478, -98.2105],
+        pegado1,
+        [19.0488, -98.2125],
+        [19.0495, -98.2138],
+        [19.0500, -98.2150],
+        [19.0507, -98.2162],
+        retorno3km,
+        [19.0518, -98.2180],
+        pegado2,
+        [19.0528, -98.2205],
+        [19.0534, -98.2215],
+        fuenteFrailes,
+        [19.0543, -98.2228],
+        pegado3,
+        giroTeziutlan,
+        teziutlan2,
+        teziutlan3,
+        teziutlan1,
+        teziutlan4,
+        teziutlan5,
+        retorno5km
+    ];
+    const ruta5kmVuelta = [...ruta5kmIda].reverse();
+
+    // ================= RUTA 10 KM (ida y vuelta) - SOLO TEZIUTLÁN SUR =================
+    const ruta10kmIda = [
+        inicio,
+        [19.0460, -98.2087],
+        giroAvJuarez,
+        [19.0472, -98.2095],
+        [19.0478, -98.2105],
+        pegado1,
+        [19.0488, -98.2125],
+        [19.0495, -98.2138],
+        [19.0500, -98.2150],
+        [19.0507, -98.2162],
+        retorno3km,
+        [19.0518, -98.2180],
+        pegado2,
+        [19.0528, -98.2205],
+        [19.0534, -98.2215],
+        fuenteFrailes,
+        [19.0543, -98.2228],
+        pegado3,
+        giroTeziutlan,
+        teziutlan2,
+        teziutlan3,
+        teziutlan1,
+        teziutlan4,
+        teziutlan5,
+        retorno5km,
+        teziutlan6,
+        teziutlan8,
+        teziutlan9,
+        teziutlan7,
+        teziutlan10,
+        teziutlan11,
+        teziutlan12,
+        chignahuapan,
+        [19.0588, -98.2325],
+        [19.0590, -98.2330],
+        viaVolkswagen1,
+        [19.0596, -98.2355],
+        viaVolkswagen2,
+        [19.0597, -98.2370],
+        viaVolkswagen3,
+        [19.0598, -98.2400],
+        [19.0599, -98.2420],
+        [19.0599, -98.2440],
+        [19.0599, -98.2460],
+        [19.0599, -98.2475],
+        centroMayor
+    ];
+    const ruta10kmVuelta = [...ruta10kmIda].reverse();
+
+    // ================= DIBUJAR RUTAS =================
+    
+    // Ruta 3 km (vino sólido)
+    L.polyline(ruta3kmIda, {
+        color: '#722F37',
+        weight: 4,
+        opacity: 0.9,
+        lineJoin: 'round',
+        lineCap: 'round'
+    }).addTo(map);
+    L.polyline(ruta3kmVuelta, {
+        color: '#722F37',
+        weight: 3,
+        opacity: 0.5,
+        lineJoin: 'round',
+        lineCap: 'round',
+        dashArray: '6, 6'
+    }).addTo(map);
+
+    // Ruta 5 km (vino con tono ligeramente diferente)
+    L.polyline(ruta5kmIda, {
+        color: '#8B3A3A',
+        weight: 4,
+        opacity: 0.85,
+        lineJoin: 'round',
+        lineCap: 'round'
+    }).addTo(map);
+    L.polyline(ruta5kmVuelta, {
+        color: '#8B3A3A',
+        weight: 3,
+        opacity: 0.45,
+        lineJoin: 'round',
+        lineCap: 'round',
+        dashArray: '6, 6'
+    }).addTo(map);
+
+    // Ruta 10 km (vino más claro)
+    L.polyline(ruta10kmIda, {
+        color: '#A0522D',
+        weight: 4,
+        opacity: 0.8,
+        lineJoin: 'round',
+        lineCap: 'round'
+    }).addTo(map);
+    L.polyline(ruta10kmVuelta, {
+        color: '#A0522D',
+        weight: 3,
+        opacity: 0.4,
+        lineJoin: 'round',
+        lineCap: 'round',
+        dashArray: '6, 6'
+    }).addTo(map);
+
+    // ================= FUNCIÓN PARA CREAR PINES =================
+    function createPin(color, label, isStart = false, km = '') {
+        const size = isStart ? 40 : 34;
+        
+        let symbol = isStart ? '🏃' : '📍';
+        
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 35">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 23 12 23s12-14 12-23c0-6.63-5.37-12-12-12z" fill="${color}" stroke="white" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="4.5" fill="white" stroke="${color}" stroke-width="1.5"/>
+        </svg>`;
+        
+        const kmLabel = km ? `<div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: ${color}; color: white; border-radius: 12px; padding: 2px 10px; font-size: 9px; font-weight: 700; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.2);">${km}</div>` : '';
+        
+        return L.divIcon({
+            html: `<div style="position: relative; text-align: center;">
+                        ${svg}
+                        <div style="position: absolute; top: 4px; left: 0; right: 0; font-size: ${isStart ? '18px' : '14px'}; text-align: center; font-weight: bold; color: ${color};">${symbol}</div>
+                        ${kmLabel}
+                   </div>`,
+            iconSize: [size, size + 24],
+            popupAnchor: [0, -(size/2 + 14)],
+            className: 'custom-pin'
+        });
+    }
+
+    // ================= PINES =================
+    
+    // Pin Inicio
+    L.marker(inicio, { icon: createPin('#722F37', '🏃', true, '0 km') })
+        .bindPopup(`
+            <b>🏁 Punto de salida y llegada</b><br>
+            📍 19.045759, -98.208896<br>
+            ⏰ 07:00 horas · 22 de junio 2026<br>
+            <hr style="margin:6px 0">
+            <span style="font-size:0.75rem;">Inicio y fin de todas las rutas</span>
+        `)
+        .addTo(map)
+        .openPopup();
+
+    // Pin 3 km
+    L.marker(retorno3km, { icon: createPin('#722F37', '📍', false, '3 km') })
+        .bindPopup(`
+            <b>📍 3 km</b><br>
+            <b>Retorno en 25 Sur</b><br>
+            📍 19.051333, -98.217584<br>
+            <span style="font-size:0.75rem;">Retorno y regreso al punto de salida</span>
+        `)
+        .addTo(map);
+
+    // Pin 5 km - Intersección con Matamoros (PERO SIGUE DE FRENTE POR TEZIUTLÁN SUR)
+    L.marker(retorno5km, { icon: createPin('#8B3A3A', '📍', false, '5 km') })
+        .bindPopup(`
+            <b>📍 5 km</b><br>
+            <b>Intersección Teziutlán Sur / Av. Matamoros</b><br>
+            📍 19.053299, -98.227936<br>
+            <span style="font-size:0.75rem;">Retorno y regreso al punto de salida</span>
+        `)
+        .addTo(map);
+
+    // Pin 10 km
+    L.marker(centroMayor, { icon: createPin('#A0522D', '📍', false, '10 km') })
+        .bindPopup(`
+            <b>📍 10 km</b><br>
+            <b>Centro Mayor</b><br>
+            📍 19.059918, -98.249708<br>
+            <span style="font-size:0.75rem;">Retorno y regreso al punto de salida</span>
+        `)
+        .addTo(map);
+
+    // ================= ELEMENTOS DE APOYO =================
+    L.circle(inicio, {
+        color: '#722F37',
+        weight: 1.5,
+        fillColor: '#722F37',
+        fillOpacity: 0.08,
+        radius: 60
+    }).addTo(map);
+
+    // Ajustar vista
+    const todasLasRutas = [...ruta3kmIda, ...ruta3kmVuelta, ...ruta5kmIda, ...ruta5kmVuelta, ...ruta10kmIda, ...ruta10kmVuelta];
+    map.fitBounds(L.polyline(todasLasRutas).getBounds(), { padding: [45, 45] });
+
+    // ================= LEYENDA =================
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = `
+            <div style="
+                background: white;
+                padding: 10px 14px;
+                border-radius: 6px;
+                box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+                font-size: 11px;
+                min-width: 180px;
+                border: 1px solid #d0d4d8;
+            ">
+                <b style="color:#2c3e50;">🏃 Carrera Atlética 2026</b>
+                <hr style="margin:6px 0; border-color:#e0e4e8;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <div style="width:20px; height:4px; background:#722F37;"></div>
+                    <span>3 km (ida)</span>
+                    <span style="margin-left:auto; font-size:9px; color:#7f8c8d;">- - -</span>
+                    <span style="font-size:9px; color:#7f8c8d;">vuelta</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <div style="width:20px; height:4px; background:#8B3A3A;"></div>
+                    <span>5 km (ida)</span>
+                    <span style="margin-left:auto; font-size:9px; color:#7f8c8d;">- - -</span>
+                    <span style="font-size:9px; color:#7f8c8d;">vuelta</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                    <div style="width:20px; height:4px; background:#A0522D;"></div>
+                    <span>10 km (ida)</span>
+                    <span style="margin-left:auto; font-size:9px; color:#7f8c8d;">- - -</span>
+                    <span style="font-size:9px; color:#7f8c8d;">vuelta</span>
+                </div>
+                <hr style="margin:4px 0; border-color:#e0e4e8;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="width:12px; height:12px; background:#722F37; border-radius:50%;"></div>
+                    <span>🏃 Inicio / Fin</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="width:12px; height:12px; background:#722F37; border-radius:50%;"></div>
+                    <span>📍 Puntos de retorno</span>
+                </div>
+                <div style="font-size:9px; color:#7f8c8d; margin-top:4px;">
+                    Ruta sobre Teziutlán Sur · 3 km · 5 km · 10 km
+                </div>
+            </div>
+        `;
+        return div;
+    };
+    legend.addTo(map);
+
+    // Escala
+    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
+</script>
+</body>
+</html>
