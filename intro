@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ruta Oficial - Carrera Atlética Puebla 2026</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: #e8eef2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1a2a3a;
+            color: white;
+            padding: 18px 28px;
+            border-bottom: 3px solid #e91e63;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 300;
+            color: #bdc3c7;
+        }
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.75;
+            margin-top: 6px;
+        }
+        .info-bar {
+            background: #f7f9fa;
+            padding: 10px 28px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #e0e4e8;
+            font-size: 0.85rem;
+        }
+        .info-bar div {
+            color: #2c3e50;
+        }
+        .info-bar strong {
+            color: #e91e63;
+            font-weight: 600;
+        }
+        .map-container {
+            height: 520px;
+            width: 100%;
+            position: relative;
+            background: #e9ecef;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info-panel {
+            background: white;
+            padding: 18px 28px;
+            border-top: 1px solid #e9ecef;
+        }
+        .info-panel h3 {
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 14px;
+            border-left: 3px solid #e91e63;
+            padding-left: 12px;
+        }
+        .route-table {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .route-item {
+            flex: 1;
+            min-width: 130px;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border-left: 2px solid #e91e63;
+        }
+        .route-item .point {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #e91e63;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .route-item .location {
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            color: #2c3e50;
+        }
+        .route-item .coord {
+            font-family: 'Courier New', monospace;
+            font-size: 0.55rem;
+            color: #7f8c8d;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        .footer {
+            background: #1a2a3a;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.7rem;
+        }
+        .distance-badge {
+            background: #e91e63;
+            color: white;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+        @media (max-width: 700px) {
+            .route-table {
+                flex-direction: column;
+            }
+            .header h1 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏃 Ruta Oficial - Carrera Atlética <span>Puebla 2026</span></h1>
+        <p>Recorrido oficial · 22 de junio de 2026 · 07:00 horas</p>
+    </div>
+    <div class="info-bar">
+        <div><strong>📅 Fecha:</strong> 22 de junio de 2026</div>
+        <div><strong>⏰ Hora:</strong> 07:00 horas</div>
+        <div><strong>📍 Salida:</strong> Zona Norte</div>
+        <div><strong>🏁 Llegada:</strong> Centro Mayor</div>
+    </div>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    <div class="info-panel">
+        <h3>📋 Puntos de referencia del recorrido</h3>
+        <div class="route-table">
+            <div class="route-item">
+                <div class="point">Punto 01 · Inicio</div>
+                <div class="location">Zona de salida</div>
+                <div class="coord">19.045759, -98.208896</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 02</div>
+                <div class="location">Giro a Izquierda · Av. Juárez</div>
+                <div class="coord">19.046682, -98.208413</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 03</div>
+                <div class="location">Retorno · 25 Sur</div>
+                <div class="coord">19.051333, -98.217584</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 04</div>
+                <div class="location">Fuente de los Frailes</div>
+                <div class="coord">19.054033, -98.222516</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 05</div>
+                <div class="location">Giro Izquierda · Teziutlán Sur</div>
+                <div class="coord">19.054592, -98.224131</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 06</div>
+                <div class="location">Av. Matamoros</div>
+                <div class="coord">19.053299, -98.227936</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 07</div>
+                <div class="location">San Martín Texmelucan</div>
+                <div class="coord">19.057100, -98.229417</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 08</div>
+                <div class="location">Teziutlán Norte</div>
+                <div class="coord">19.058207, -98.228966</div>
+            </div>
+            <div class="route-item">
+                <div class="point">Punto 09 · Final</div>
+                <div class="location">Centro Mayor (retorno)</div>
+                <div class="coord">19.059918, -98.249708</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 16px;">
+            <span class="distance-badge">📏 Distancia total estimada: 5.8 km</span>
+        </div>
+        <div style="font-size: 0.7rem; color: #7f8c8d; text-align: center; margin-top: 12px;">
+            Ruta trazada sobre Av. Juárez, Teziutlán, Matamoros y San Martín Texmelucan · Datos oficiales
+        </div>
+    </div>
+    <div class="footer">
+        Dirección de Deportes y Eventos · Puebla, 2026
+    </div>
+</div>
+
+<script>
+    // Inicializar mapa
+    var map = L.map('map').setView([19.052, -98.220], 14);
+
+    // Capa de mapa
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    // ================= COORDENADAS EXACTAS =================
+    const punto01 = [19.04575882203819, -98.20889603352904];
+    const punto02 = [19.046681697858368, -98.20841323589693];
+    const punto03 = [19.05133308771675, -98.21758394264883];
+    const punto04 = [19.05403326296829, -98.22251636872831];
+    const punto05 = [19.05459172448963, -98.22413052742172];
+    const punto06 = [19.05329914979648, -98.22793568450413];
+    const punto07 = [19.05710022981516, -98.22941737850913];
+    const punto08 = [19.05820693339643, -98.22896605790861];
+    const punto09 = [19.05991818034831, -98.24970753065566];
+
+    // ================= CONSTRUCCIÓN DE RUTA CON PUNTOS INTERMEDIOS =================
+    // Segmento 1: Inicio → Giro a Av. Juárez
+    const seg1 = [
+        punto01,
+        [19.0460, -98.2087],
+        [19.0463, -98.2086],
+        punto02
+    ];
+
+    // Segmento 2: Av. Juárez → Retorno 25 Sur
+    const seg2 = [
+        punto02,
+        [19.0470, -98.2095],
+        [19.0475, -98.2105],
+        [19.0480, -98.2118],
+        [19.0485, -98.2130],
+        [19.0490, -98.2142],
+        [19.0495, -98.2155],
+        [19.0500, -98.2165],
+        [19.0507, -98.2170],
+        punto03
+    ];
+
+    // Segmento 3: Retorno → Fuente de los Frailes
+    const seg3 = [
+        punto03,
+        [19.0518, -98.2180],
+        [19.0522, -98.2188],
+        [19.0526, -98.2196],
+        [19.0530, -98.2204],
+        [19.0534, -98.2212],
+        [19.0537, -98.2218],
+        punto04
+    ];
+
+    // Segmento 4: Fuente de los Frailes → Giro a Teziutlán Sur
+    const seg4 = [
+        punto04,
+        [19.0543, -98.2228],
+        [19.0544, -98.2232],
+        [19.0545, -98.2236],
+        punto05
+    ];
+
+    // Segmento 5: Teziutlán Sur → Av. Matamoros
+    const seg5 = [
+        punto05,
+        [19.0542, -98.2248],
+        [19.0539, -98.2258],
+        [19.0537, -98.2266],
+        [19.0534, -98.2272],
+        punto06
+    ];
+
+    // Segmento 6: Av. Matamoros → San Martín Texmelucan
+    const seg6 = [
+        punto06,
+        [19.0538, -98.2280],
+        [19.0544, -98.2282],
+        [19.0550, -98.2285],
+        [19.0556, -98.2288],
+        [19.0562, -98.2290],
+        [19.0568, -98.2292],
+        punto07
+    ];
+
+    // Segmento 7: San Martín Texmelucan → Teziutlán Norte
+    const seg7 = [
+        punto07,
+        [19.0574, -98.2293],
+        [19.0578, -98.2291],
+        [19.0580, -98.2290],
+        punto08
+    ];
+
+    // Segmento 8: Teziutlán Norte → Centro Mayor
+    const seg8 = [
+        punto08,
+        [19.0584, -98.2305],
+        [19.0587, -98.2320],
+        [19.0590, -98.2340],
+        [19.0592, -98.2360],
+        [19.0594, -98.2380],
+        [19.0596, -98.2400],
+        [19.0597, -98.2420],
+        [19.0598, -98.2440],
+        [19.0599, -98.2460],
+        [19.0599, -98.2475],
+        punto09
+    ];
+
+    // Ruta completa
+    const rutaCompleta = [
+        ...seg1, ...seg2.slice(1), ...seg3.slice(1), ...seg4.slice(1),
+        ...seg5.slice(1), ...seg6.slice(1), ...seg7.slice(1), ...seg8.slice(1)
+    ];
+
+    // ================= LÍNEA DE RUTA COLOR VINO =================
+    L.polyline(rutaCompleta, {
+        color: '#722F37',
+        weight: 5,
+        opacity: 0.9,
+        lineJoin: 'round',
+        lineCap: 'round'
+    }).addTo(map);
+
+    // Línea de contorno sutil
+    L.polyline(rutaCompleta, {
+        color: '#5a626e',
+        weight: 1.5,
+        opacity: 0.25,
+        dashArray: '4, 8'
+    }).addTo(map);
+
+    // ================= PINES PROFESIONALES =================
+    function createPin(color, label, isStart = false, isEnd = false) {
+        const size = (isStart || isEnd) ? 36 : 30;
+        const fontSize = (isStart || isEnd) ? '14px' : '11px';
+        
+        let symbol = '';
+        if (isStart) symbol = '🏃';
+        else if (isEnd) symbol = '🏁';
+        else symbol = '📍';
+        
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 35">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 23 12 23s12-14 12-23c0-6.63-5.37-12-12-12z" fill="${color}" stroke="white" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="4" fill="white" stroke="${color}" stroke-width="1"/>
+        </svg>`;
+        
+        return L.divIcon({
+            html: `<div style="position: relative; text-align: center;">
+                        ${svg}
+                        <div style="position: absolute; top: 4px; left: 0; right: 0; font-size: ${fontSize}; text-align: center; font-weight: bold; color: ${color};">${symbol}</div>
+                   </div>`,
+            iconSize: [size, size],
+            popupAnchor: [0, -size/2],
+            className: 'custom-pin'
+        });
+    }
+
+    // Colores para los pines (tonos institucionales)
+    const pinColors = {
+        start: '#e91e63',
+        waypoint1: '#FF8C00',
+        waypoint2: '#FFED00',
+        waypoint3: '#008026',
+        waypoint4: '#24408E',
+        waypoint5: '#732982',
+        waypoint6: '#e67e22',
+        waypoint7: '#2ecc71',
+        waypoint8: '#3498db',
+        end: '#e91e63'
+    };
+
+    // Pin de inicio
+    L.marker(punto01, { icon: createPin(pinColors.start, '🏃', true, false) })
+        .bindPopup(`
+            <b>🏁 Punto de salida</b><br>
+            📍 19.045759, -98.208896<br>
+            ⏰ 07:00 horas · 22 de junio 2026
+        `)
+        .addTo(map)
+        .openPopup();
+
+    // Puntos intermedios
+    L.marker(punto02, { icon: createPin(pinColors.waypoint1, '📍', false, false) })
+        .bindPopup(`<b>Punto 02</b><br>Giro a Av. Juárez<br>19.046682, -98.208413`)
+        .addTo(map);
+
+    L.marker(punto03, { icon: createPin(pinColors.waypoint2, '📍', false, false) })
+        .bindPopup(`<b>Punto 03</b><br>Retorno · 25 Sur<br>19.051333, -98.217584`)
+        .addTo(map);
+
+    L.marker(punto04, { icon: createPin(pinColors.waypoint3, '📍', false, false) })
+        .bindPopup(`<b>Punto 04</b><br>Fuente de los Frailes<br>19.054033, -98.222516`)
+        .addTo(map);
+
+    L.marker(punto05, { icon: createPin(pinColors.waypoint4, '📍', false, false) })
+        .bindPopup(`<b>Punto 05</b><br>Giro a Teziutlán Sur<br>19.054592, -98.224131`)
+        .addTo(map);
+
+    L.marker(punto06, { icon: createPin(pinColors.waypoint5, '📍', false, false) })
+        .bindPopup(`<b>Punto 06</b><br>Av. Matamoros<br>19.053299, -98.227936`)
+        .addTo(map);
+
+    L.marker(punto07, { icon: createPin(pinColors.waypoint6, '📍', false, false) })
+        .bindPopup(`<b>Punto 07</b><br>San Martín Texmelucan<br>19.057100, -98.229417`)
+        .addTo(map);
+
+    L.marker(punto08, { icon: createPin(pinColors.waypoint7, '📍', false, false) })
+        .bindPopup(`<b>Punto 08</b><br>Teziutlán Norte<br>19.058207, -98.228966`)
+        .addTo(map);
+
+    // Pin de final
+    L.marker(punto09, { icon: createPin(pinColors.end, '🏁', false, true) })
+        .bindPopup(`
+            <b>🏁 Punto de llegada</b><br>
+            <b>Centro Mayor</b><br>
+            📍 19.059918, -98.249708<br>
+            🎉 Retorno y cierre del evento
+        `)
+        .addTo(map);
+
+    // ================= ELEMENTOS DE APOYO =================
+    L.circle(punto01, {
+        color: '#e91e63',
+        weight: 1.5,
+        fillColor: '#e91e63',
+        fillOpacity: 0.08,
+        radius: 50
+    }).addTo(map);
+
+    L.circle(punto09, {
+        color: '#e91e63',
+        weight: 1.5,
+        fillColor: '#e91e63',
+        fillOpacity: 0.08,
+        radius: 70
+    }).addTo(map);
+
+    // Ajustar vista
+    map.fitBounds(L.polyline(rutaCompleta).getBounds(), { padding: [40, 40] });
+
+    // ================= LEYENDA =================
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = `
+            <div style="
+                background: white;
+                padding: 10px 14px;
+                border-radius: 6px;
+                box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+                font-size: 11px;
+                min-width: 160px;
+                border: 1px solid #d0d4d8;
+            ">
+                <b style="color:#2c3e50;">🏃 Carrera Atlética 2026</b>
+                <hr style="margin:6px 0; border-color:#e0e4e8;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                    <div style="width:24px; height:4px; background:#722F37;"></div>
+                    <span>Recorrido oficial</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <div style="width:14px; height:14px; background:#e91e63; border-radius:50%;"></div>
+                    <span>Inicio / Final</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <div style="width:12px; height:12px; background:#FF8C00; border-radius:50%;"></div>
+                    <span>Puntos de referencia</span>
+                </div>
+                <div style="font-size:9px; color:#7f8c8d; margin-top:6px;">
+                    Av. Juárez · Teziutlán · Matamoros
+                </div>
+            </div>
+        `;
+        return div;
+    };
+    legend.addTo(map);
+
+    // Escala
+    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
+</script>
+</body>
+</html>
